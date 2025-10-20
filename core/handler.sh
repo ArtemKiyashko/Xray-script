@@ -990,8 +990,8 @@ function handler_client_management() {
         read -r client_index
         
         if [[ "$client_index" =~ ^[0-9]+$ ]] && [[ "$client_index" -gt 0 ]]; then
-            # 确认删除
-            local client_name=$(bash "${CLIENT_PATH}" 'list' | grep "^${client_index}\." | sed 's/^[0-9]*\. \([^(]*\).*/\1/' | xargs)
+            # 确认删除 - 使用新的 get-name 命令获取客户端名称
+            local client_name=$(bash "${CLIENT_PATH}" 'get-name' "$client_index")
             if [[ -n "$client_name" ]]; then
                 printf "${YELLOW}[$(echo "$I18N_DATA" | jq -r '.title.warn')] ${NC}$(echo "$I18N_DATA" | jq -r '.client_management.delete.confirm' | sed "s/\${name}/$client_name/"): " >&2
                 read -r confirm

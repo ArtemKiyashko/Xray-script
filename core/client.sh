@@ -100,9 +100,27 @@ function load_i18n() {
 # =============================================================================
 function cache_json_data() {
     # 读取 Xray 配置文件的完整 JSON 内容到全局变量 XRAY_CONFIG
-    XRAY_CONFIG="$(jq '.' "${XRAY_CONFIG_PATH}")"
+    if [[ ! -f "${XRAY_CONFIG_PATH}" ]]; then
+        echo -e "${RED}[Error]${NC} Xray config file not found: ${XRAY_CONFIG_PATH}" >&2
+        exit 1
+    fi
+    
+    XRAY_CONFIG="$(jq '.' "${XRAY_CONFIG_PATH}" 2>/dev/null)"
+    if [[ $? -ne 0 ]]; then
+        echo -e "${RED}[Error]${NC} Invalid JSON in Xray config file: ${XRAY_CONFIG_PATH}" >&2
+        exit 1
+    fi
+    
     # 读取脚本配置文件的完整 JSON 内容到全局变量 SCRIPT_CONFIG
-    SCRIPT_CONFIG="$(jq '.' "${SCRIPT_CONFIG_PATH}")"
+    if [[ -f "${SCRIPT_CONFIG_PATH}" ]]; then
+        SCRIPT_CONFIG="$(jq '.' "${SCRIPT_CONFIG_PATH}" 2>/dev/null)"
+        if [[ $? -ne 0 ]]; then
+            echo -e "${RED}[Error]${NC} Invalid JSON in script config file: ${SCRIPT_CONFIG_PATH}" >&2
+            exit 1
+        fi
+    else
+        SCRIPT_CONFIG="{}"
+    fi
 }
 
 # =============================================================================
@@ -215,8 +233,8 @@ function add_client() {
         return 1
     fi
     
-    # 生成新的 shortId (默认长度2字节)
-    local new_short_id=$(bash "${GENERATE_PATH}" '--short-id' '2')
+    # 生成新的 shortId (максимальная длина 8 байт)
+    local new_short_id=$(bash "${GENERATE_PATH}" '--short-id' '8')
     
     if [[ -z "$new_short_id" ]]; then
         echo -e "${RED}[$(echo "$I18N_DATA" | jq -r '.title.error')]${NC} Failed to generate shortId" >&2
@@ -228,7 +246,8 @@ function add_client() {
 {
     "id": "$new_uuid",
     "flow": "xtls-rprx-vision",
-    "email": "$client_name"
+    "email": "$client_name",
+    "level": 0
 }
 EOF
 )
@@ -238,10 +257,17 @@ EOF
         --argjson i "$inbound_index" \
         --argjson client "$new_client" \
         --arg short_id "$new_short_id" \
-        '.inbounds[$i].settings.clients += [$client] | .inbounds[$i].streamSettings.realitySettings.shortIds += [$short_id]')
+        '.inbounds[$i].settings.clients += [$client] | .inbounds[$i].streamSettings.realitySettings.shortIds += [$short_id]' 2>/dev/null)
     
-    if [[ $? -ne 0 ]]; then
+    if [[ $? -ne 0 ]] || [[ -z "$updated_config" ]]; then
         echo -e "${RED}[$(echo "$I18N_DATA" | jq -r '.title.error')]${NC} $(echo "$I18N_DATA" | jq -r '.client_management.add.fail')" >&2
+        return 1
+    fi
+    
+    # 验证更新后的配置是否有效
+    echo "$updated_config" | jq '.' >/dev/null 2>&1
+    if [[ $? -ne 0 ]]; then
+        echo -e "${RED}[$(echo "$I18N_DATA" | jq -r '.title.error')]${NC} Generated invalid configuration during addition" >&2
         return 1
     fi
     
@@ -260,6 +286,39 @@ EOF
         echo -e "${RED}[$(echo "$I18N_DATA" | jq -r '.title.error')]${NC} $(echo "$I18N_DATA" | jq -r '.client_management.add.fail')" >&2
         return 1
     fi
+}
+
+# =============================================================================
+# 函数名称: get_client_name_by_index
+# 功能描述: 根据索引获取客户端名称。
+# 参数:
+#   $1: 客户端索引 (从 1 开始)
+# 返回值: 成功返回客户端名称，失败返回空字符串
+# =============================================================================
+function get_client_name_by_index() {
+    local client_index="$1"
+    
+    if [[ ! "$client_index" =~ ^[0-9]+$ ]] || [[ "$client_index" -lt 1 ]]; then
+        echo ""
+        return 1
+    fi
+    
+    local inbound_index=$(get_vision_inbound_index)
+    
+    if [[ "$inbound_index" == "-1" ]]; then
+        echo ""
+        return 1
+    fi
+    
+    local clients_count=$(echo "${XRAY_CONFIG}" | jq --argjson i "$inbound_index" '.inbounds[$i].settings.clients | length')
+    
+    if [[ "$client_index" -gt "$clients_count" ]]; then
+        echo ""
+        return 1
+    fi
+    
+    # 获取客户端名称
+    echo "${XRAY_CONFIG}" | jq -r --argjson i "$inbound_index" --argjson j "$((client_index-1))" '.inbounds[$i].settings.clients[$j].email // "client-" + ($j + 1 | tostring)'
 }
 
 # =============================================================================
@@ -295,10 +354,17 @@ function delete_client() {
     local client_name=$(echo "${XRAY_CONFIG}" | jq -r --argjson i "$inbound_index" --argjson j "$((client_index-1))" '.inbounds[$i].settings.clients[$j].email // "client-" + ($j + 1 | tostring)')
     
     # 删除客户端配置 (注意：shortIds 不会被删除，以保持索引对应关系)
-    local updated_config=$(echo "${XRAY_CONFIG}" | jq --argjson i "$inbound_index" --argjson j "$((client_index-1))" 'del(.inbounds[$i].settings.clients[$j])')
+    local updated_config=$(echo "${XRAY_CONFIG}" | jq --argjson i "$inbound_index" --argjson j "$((client_index-1))" 'del(.inbounds[$i].settings.clients[$j])' 2>/dev/null)
     
-    if [[ $? -ne 0 ]]; then
+    if [[ $? -ne 0 ]] || [[ -z "$updated_config" ]]; then
         echo -e "${RED}[$(echo "$I18N_DATA" | jq -r '.title.error')]${NC} $(echo "$I18N_DATA" | jq -r '.client_management.delete.fail')" >&2
+        return 1
+    fi
+    
+    # 验证更新后的配置是否有效
+    echo "$updated_config" | jq '.' >/dev/null 2>&1
+    if [[ $? -ne 0 ]]; then
+        echo -e "${RED}[$(echo "$I18N_DATA" | jq -r '.title.error')]${NC} Generated invalid configuration during deletion" >&2
         return 1
     fi
     
@@ -432,9 +498,16 @@ function main() {
         fi
         generate_share_link "$2"
         ;;
+    get-name)
+        if [[ -z "$2" ]]; then
+            echo -e "${RED}[$(echo "$I18N_DATA" | jq -r '.title.error')]${NC} Client index required" >&2
+            exit 1
+        fi
+        get_client_name_by_index "$2"
+        ;;
     *)
         echo -e "${RED}[$(echo "$I18N_DATA" | jq -r '.title.error')]${NC} Invalid operation: $1" >&2
-        echo "Usage: $0 {list|add|delete|share} [client_name|client_index]" >&2
+        echo "Usage: $0 {list|add|delete|share|get-name} [client_name|client_index]" >&2
         exit 1
         ;;
     esac
