@@ -3,7 +3,7 @@
 # Copyright (C) 2025 zxcvos
 #
 # Xray-script:
-#   https://github.com/zxcvos/Xray-script
+#   https://github.com/ArtemKiyashko/Xray-script
 # =============================================================================
 # 注释: 通过 Qwen3-Coder 生成。
 # 脚本名称: generate.sh
@@ -103,7 +103,7 @@ function generate_uuid() {
             uuid=$(xray uuid -i "${input}")
         fi
     else
-        # 如果没有安装 xray，则使用系统方法生成 UUID
+        # 如果没有安装 xray，则使用系统的 /proc/sys/kernel/random/uuid 文件
         uuid=$(cat /proc/sys/kernel/random/uuid)
     fi
     # 输出生成的 UUID

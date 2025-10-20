@@ -3,7 +3,7 @@
 # Copyright (C) 2025 zxcvos
 #
 # Xray-script:
-#   https://github.com/zxcvos/Xray-script
+#   https://github.com/ArtemKiyashko/Xray-script
 # =============================================================================
 # 注释: 通过 Qwen3-Coder 生成。
 # 脚本名称: handler.sh
@@ -56,6 +56,7 @@ readonly GENERATE_PATH="${CUR_DIR}/generate.sh" # 生成器脚本
 readonly CHECK_PATH="${CUR_DIR}/check.sh"       # 检查器脚本
 readonly SHARE_PATH="${CUR_DIR}/share.sh"       # 分享链接生成脚本
 readonly READ_PATH="${CUR_DIR}/read.sh"         # 用户输入读取脚本
+readonly CLIENT_PATH="${CUR_DIR}/client.sh"     # 客户端管理脚本
 readonly NGINX_PATH="${SERVICE_DIR}/nginx.sh"   # Nginx 服务管理脚本
 readonly SSL_PATH="${SERVICE_DIR}/ssl.sh"       # SSL 证书管理脚本
 readonly DOCKER_PATH="${SERVICE_DIR}/docker.sh" # Docker 容器管理脚本
@@ -953,6 +954,83 @@ function handler_share() {
 }
 
 # =============================================================================
+# 函数名称: handler_client_management
+# 功能描述: 处理客户端管理菜单选择并执行相应的操作。
+# 参数: 无 (通过 menu.sh 获取用户选择)
+# 返回值: 无 (调用 client.sh 脚本执行操作)
+# =============================================================================
+function handler_client_management() {
+    # 显示客户端管理菜单
+    bash "${PROJECT_ROOT}/core/menu.sh" '--client'
+    local choose=$(echo $?)
+    
+    case ${choose} in
+    1) 
+        # 列出所有客户端
+        bash "${CLIENT_PATH}" 'list'
+        ;;
+    2) 
+        # 添加新客户端
+        printf "${YELLOW}[$(echo "$I18N_DATA" | jq -r '.title.tip')] ${NC}$(echo "$I18N_DATA" | jq -r '.client_management.add.enter_name'): " >&2
+        read -r client_name
+        
+        if [[ -n "$client_name" ]]; then
+            bash "${CLIENT_PATH}" 'add' "$client_name"
+        else
+            echo -e "${RED}[$(echo "$I18N_DATA" | jq -r '.title.error')]${NC} Client name cannot be empty" >&2
+        fi
+        ;;
+    3) 
+        # 删除客户端
+        # 先显示客户端列表
+        bash "${CLIENT_PATH}" 'list'
+        
+        # 获取用户选择
+        printf "${YELLOW}[$(echo "$I18N_DATA" | jq -r '.title.tip')] ${NC}$(echo "$I18N_DATA" | jq -r '.client_management.delete.select_client'): " >&2
+        read -r client_index
+        
+        if [[ "$client_index" =~ ^[0-9]+$ ]] && [[ "$client_index" -gt 0 ]]; then
+            # 确认删除
+            local client_name=$(bash "${CLIENT_PATH}" 'list' | grep "^${client_index}\." | sed 's/^[0-9]*\. \([^(]*\).*/\1/' | xargs)
+            if [[ -n "$client_name" ]]; then
+                printf "${YELLOW}[$(echo "$I18N_DATA" | jq -r '.title.warn')] ${NC}$(echo "$I18N_DATA" | jq -r '.client_management.delete.confirm' | sed "s/\${name}/$client_name/"): " >&2
+                read -r confirm
+                
+                if [[ "$confirm" =~ ^[Yy]$ ]]; then
+                    bash "${CLIENT_PATH}" 'delete' "$client_index"
+                else
+                    echo -e "${YELLOW}[$(echo "$I18N_DATA" | jq -r '.title.info')]${NC} Operation cancelled" >&2
+                fi
+            else
+                echo -e "${RED}[$(echo "$I18N_DATA" | jq -r '.title.error')]${NC} $(echo "$I18N_DATA" | jq -r '.client_management.delete.not_found')" >&2
+            fi
+        else
+            echo -e "${RED}[$(echo "$I18N_DATA" | jq -r '.title.error')]${NC} Invalid client index" >&2
+        fi
+        ;;
+    4) 
+        # 生成分享链接
+        # 先显示客户端列表
+        bash "${CLIENT_PATH}" 'list'
+        
+        # 获取用户选择
+        printf "${YELLOW}[$(echo "$I18N_DATA" | jq -r '.title.tip')] ${NC}$(echo "$I18N_DATA" | jq -r '.client_management.share.select_client'): " >&2
+        read -r client_index
+        
+        if [[ "$client_index" =~ ^[0-9]+$ ]] && [[ "$client_index" -gt 0 ]]; then
+            bash "${CLIENT_PATH}" 'share' "$client_index"
+        else
+            echo -e "${RED}[$(echo "$I18N_DATA" | jq -r '.title.error')]${NC} Invalid client index" >&2
+        fi
+        ;;
+    *) 
+        # 退出或无效选择
+        return 0
+        ;;
+    esac
+}
+
+# =============================================================================
 # 函数名称: handler_traffic
 # 功能描述: 调用 traffic.sh 脚本显示流量统计。
 # 参数: 无
@@ -1490,6 +1568,7 @@ function main() {
     --web) handler_web "$1" ;;                  # 配置 Web 服务
     --v3-reset) handler_cloudreve_v3 'reset' ;; # 重置 Cloudreve v3
     --share) handler_share ;;                   # 显示分享链接
+    --client-management) handler_client_management ;; # 管理客户端配置
     --nginx-cron) handler_nginx_cron ;;         # 管理 Nginx Cron
     --geodata-cron) handler_geodata_cron ;;     # 管理 GeoData Cron
     --warp) handler_warp ;;                     # 管理 WARP

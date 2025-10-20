@@ -2,7 +2,7 @@
 # =============================================================================
 # 注释: 通过 Qwen3-Coder 生成。
 # 脚本名称: main.sh
-# 脚本仓库: https://github.com/zxcvos/Xray-script
+# 脚本仓库: https://github.com/ArtemKiyashko/Xray-script
 # 功能描述: X-UI 项目的主要管理脚本。
 #           提供交互式菜单和命令行接口，用于安装、配置、管理 Xray-core
 #           和相关服务（如 Nginx, GeoIP, WARP 等），支持多语言。
@@ -413,7 +413,7 @@ function processes_index() {
     4) exec_handler '--start' ;;      # 选择 4：启动服务
     5) exec_handler '--stop' ;;       # 选择 5：停止服务
     6) exec_handler '--restart' ;;    # 选择 6：重启服务
-    7) exec_handler '--share' ;;      # 选择 7：显示分享链接
+    7) exec_handler '--client-management' ;; # 选择 7：管理客户端配置
     8) exec_handler '--traffic' ;;    # 选择 8：显示流量统计
     9) processes_config ;;            # 选择 9：进入配置管理流程
     *) exit 0 ;;                      # 其他情况：退出脚本

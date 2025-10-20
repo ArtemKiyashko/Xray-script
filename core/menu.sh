@@ -3,7 +3,7 @@
 # Copyright (C) 2025 zxcvos
 #
 # Xray-script:
-#   https://github.com/zxcvos/Xray-script
+#   https://github.com/ArtemKiyashko/Xray-script
 # =============================================================================
 # 注释: 通过 Qwen3-Coder 生成。
 # 脚本名称: menu.sh
@@ -296,6 +296,30 @@ function menu_config() {
 }
 
 # =============================================================================
+# 函数名称: menu_client_management
+# 功能描述: 显示客户端管理菜单。
+# 参数: 无 (直接使用全局变量 I18N_DATA)
+# 返回值: 无 (直接打印到标准错误输出 >&2)
+# =============================================================================
+function menu_client_management() {
+    # 打印客户端管理菜单标题
+    echo -e "------------------ $(echo "$I18N_DATA" | jq -r ".client_management.title") ------------------"
+    # 打印选项 1
+    echo -e "${GREEN}1.${NC} $(echo "$I18N_DATA" | jq -r ".client_management.option1")"
+    # 打印选项 2
+    echo -e "${GREEN}2.${NC} $(echo "$I18N_DATA" | jq -r ".client_management.option2")"
+    # 打印选项 3
+    echo -e "${GREEN}3.${NC} $(echo "$I18N_DATA" | jq -r ".client_management.option3")"
+    # 打印选项 4
+    echo -e "${GREEN}4.${NC} $(echo "$I18N_DATA" | jq -r ".client_management.option4")"
+
+    # 打印分隔线
+    echo -e "------------------------------------------------------"
+    # 打印退出选项
+    echo -e "${RED}0.${NC} $(echo "$I18N_DATA" | jq -r ".client_management.option0")"
+}
+
+# =============================================================================
 # 函数名称: menu_route
 # 功能描述: 显示路由规则管理菜单。
 # 参数: 无 (直接使用全局变量 I18N_DATA)
@@ -485,6 +509,7 @@ function main() {
     --management) menu_config >&2 ;;      # 显示配置管理菜单
     --route) menu_route >&2 ;;            # 显示路由管理菜单
     --sni) menu_sni_config >&2 ;;         # 显示 SNI 配置菜单
+    --client) menu_client_management >&2 ;; # 显示客户端管理菜单
     --banner) print_banner >&2 ;;         # 显示 Banner
     --status) print_status >&2 ;;         # 显示状态信息
     esac

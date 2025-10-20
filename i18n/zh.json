@@ -34,7 +34,7 @@
       "option4": "启动",
       "option5": "停止",
       "option6": "重启",
-      "option7": "分享链接与二维码",
+      "option7": "管理客户端配置",
       "option8": "信息统计",
       "option9": "管理配置",
       "option0": "退出"
@@ -168,6 +168,38 @@
     "extra": "XHTTP 扩展配置(extra)",
     "link": "分享链接",
     "qr": "二维码"
+  },
+  "client_management": {
+    "title": "客户端配置管理",
+    "option1": "查看所有客户端",
+    "option2": "添加新客户端",
+    "option3": "删除客户端",
+    "option4": "生成分享链接",
+    "option0": "返回主菜单",
+    "add": {
+      "enter_name": "请输入客户端名称",
+      "name_exists": "客户端名称已存在，请使用其他名称",
+      "success": "客户端添加成功",
+      "fail": "客户端添加失败"
+    },
+    "delete": {
+      "select_client": "请选择要删除的客户端编号",
+      "confirm": "确定要删除客户端 '${name}' 吗？(y/N)",
+      "success": "客户端删除成功",
+      "fail": "客户端删除失败",
+      "not_found": "未找到指定的客户端"
+    },
+    "list": {
+      "no_clients": "当前没有配置任何客户端",
+      "header": "客户端列表",
+      "format": "${index}. ${name} (UUID: ${uuid})",
+      "shortid_preserved": "注意：删除客户端时不会删除对应的 ShortID，以保持索引对应关系"
+    },
+    "share": {
+      "select_client": "请选择要生成分享链接的客户端编号",
+      "generating": "正在生成分享链接...",
+      "not_found": "未找到指定的客户端"
+    }
   },
   "check": {
     "ip": {
