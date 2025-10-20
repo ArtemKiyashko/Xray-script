@@ -174,6 +174,12 @@ function list_clients() {
     # 获取shortIds数组长度
     local short_ids_count=$(echo "${XRAY_CONFIG}" | jq --argjson i "$inbound_index" '.inbounds[$i].streamSettings.realitySettings.shortIds | length')
     
+    # 检查数组同步状态
+    if [[ "$clients_count" -ne "$short_ids_count" ]]; then
+        echo -e "${YELLOW}[$(echo "$I18N_DATA" | jq -r '.title.warn')]${NC} Warning: clients array ($clients_count) and shortIds array ($short_ids_count) are not synchronized" >&2
+        echo >&2
+    fi
+    
     for ((j=0; j<clients_count; j++)); do
         local client_id=$(echo "${XRAY_CONFIG}" | jq -r --argjson i "$inbound_index" --argjson j "$j" '.inbounds[$i].settings.clients[$j].id')
         local client_email=$(echo "${XRAY_CONFIG}" | jq -r --argjson i "$inbound_index" --argjson j "$j" '.inbounds[$i].settings.clients[$j].email // "client-" + ($j + 1 | tostring)')
@@ -323,7 +329,8 @@ function get_client_name_by_index() {
 
 # =============================================================================
 # 函数名称: delete_client
-# 功能描述: 删除指定的 Vision VLESS 客户端配置。
+# 功能描述: 删除指定的 Vision VLESS 客户端配置和对应的 shortId。
+#           确保 clients 数组和 shortIds 数组保持同步。
 # 参数:
 #   $1: 客户端索引 (从 1 开始)
 # 返回值: 成功返回 0，失败返回 1
@@ -353,8 +360,8 @@ function delete_client() {
     # 获取要删除的客户端名称
     local client_name=$(echo "${XRAY_CONFIG}" | jq -r --argjson i "$inbound_index" --argjson j "$((client_index-1))" '.inbounds[$i].settings.clients[$j].email // "client-" + ($j + 1 | tostring)')
     
-    # 删除客户端配置 (注意：shortIds 不会被删除，以保持索引对应关系)
-    local updated_config=$(echo "${XRAY_CONFIG}" | jq --argjson i "$inbound_index" --argjson j "$((client_index-1))" 'del(.inbounds[$i].settings.clients[$j])' 2>/dev/null)
+    # 删除客户端配置和对应的shortId，保持数组索引同步
+    local updated_config=$(echo "${XRAY_CONFIG}" | jq --argjson i "$inbound_index" --argjson j "$((client_index-1))" 'del(.inbounds[$i].settings.clients[$j]) | del(.inbounds[$i].streamSettings.realitySettings.shortIds[$j])' 2>/dev/null)
     
     if [[ $? -ne 0 ]] || [[ -z "$updated_config" ]]; then
         echo -e "${RED}[$(echo "$I18N_DATA" | jq -r '.title.error')]${NC} $(echo "$I18N_DATA" | jq -r '.client_management.delete.fail')" >&2
@@ -376,7 +383,7 @@ function delete_client() {
         XRAY_CONFIG="$updated_config"
         echo -e "${GREEN}[$(echo "$I18N_DATA" | jq -r '.title.info')]${NC} $(echo "$I18N_DATA" | jq -r '.client_management.delete.success')" >&2
         echo -e "Deleted client: $client_name" >&2
-        echo -e "${YELLOW}[$(echo "$I18N_DATA" | jq -r '.title.info')]${NC} ShortIds array preserved to maintain index correspondence" >&2
+        echo -e "${YELLOW}[$(echo "$I18N_DATA" | jq -r '.title.info')]${NC} Corresponding shortId also removed to maintain array synchronization" >&2
         return 0
     else
         echo -e "${RED}[$(echo "$I18N_DATA" | jq -r '.title.error')]${NC} $(echo "$I18N_DATA" | jq -r '.client_management.delete.fail')" >&2
