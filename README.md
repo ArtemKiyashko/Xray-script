@@ -1,102 +1,143 @@
-中文 | [English](/.github/README.en.md)
+English | [中文](/.github/README.zh.md)
 
-# Xray 管理脚本 :sparkles:
+# Xray Management Script :sparkles:
 
-* 一个纯 Shell 编写的 Xray 管理脚本
-* 可选配置:
+* A pure Shell-written Xray management script for Xray
+* Optional configurations:
   * mKCP (VLESS-mKCP-seed)
   * Vision (VLESS-Vision-REALITY)
   * XHTTP (VLESS-XHTTP-REALITY)
   * trojan (Trojan-XHTTP-REALITY)
-  * Fallback (包含 VLESS-Vision-REALITY、VLESS-XHTTP-REALITY)
-  * SNI (包含 Vision_REALITY、XHTTP_REALITY、XHTTP_TLS)
-* SNI 配置由 Nginx 实现 SNI 分流，适合过 CDN、上下行分离、多网站共存等需求
-* SNI 分享链接实现了上下行分离(上行 xhttp+TLS+CDN | 下行 xhttp+Reality、上行 xhttp+Reality | 下行 xhttp+TLS+CDN)
-* 规则配置与自填:
-  * 禁止 bittorrent 流量(可选)
-  * 禁止回国 ip 流量(可选)
-  * 屏蔽广告(可选)
-  * 添加自定义 WARP Proxy 分流
-  * 添加自定义屏蔽分流
-* 开关 Cloudflare WARP Proxy( :whale: Docker 部署)
-* 开关 geodata 自动更新功能
-* xray 端口默认与自填:
-  * VLESS-mKCP: 随机生成
+  * Fallback (includes VLESS-Vision-REALITY, VLESS-XHTTP-REALITY)
+  * SNI (includes Vision_REALITY, XHTTP_REALITY, XHTTP_TLS)
+* SNI configuration uses Nginx for SNI traffic splitting, ideal for CDN traversal, upstream/downstream separation, and multi-site coexistence
+* SNI share links implement bidirectional separation (upstream: xhttp+TLS+CDN | downstream: xhttp+Reality, upstream: xhttp+Reality | downstream: xhttp+TLS+CDN)
+* Rule configurations and custom entries:
+  * Block BitTorrent traffic (optional)
+  * Block China IP traffic (optional)
+  * Ad blocking (optional)
+  * Add custom WARP Proxy rules
+  * Add custom block rules
+* Cloudflare WARP Proxy toggle (🐳 Docker deployment)
+* Geodata auto-update toggle
+* Xray ports default/fill:
+  * VLESS-mKCP: Randomly generated
   * ALL-REALITY: 443
-* UUID 默认与自填:
-  * 随机生成
-  * 自定义输入标准 UUID
-  * 非标准 UUID 映射转化为 UUID
-* kcp(seed) 和 trojan(password) 默认与自填:
-  * 随机生成(格式: cw-GEMDYgwIV3_g#)
-  * 自定义输入
-* target 默认与自填:
-  * 随机在 serverNames.json 中获取
-  * 实现自填 target 的 TLSv1.3 与 H2 验证
-  * 实现自填 target 的 serverNames 自动获取
-* shortId 默认与自填:
-  * 随机生成(默认两个 shortId 例如: 01234567, 0123456789abcdef)
-  * 实现自填 shortId
-  * 实现输入值为 0 到 8, 则自动生成对 0-16 长度的 shortId
-  * 支持逗号分隔的多个值
-* path 默认与自填:
-  * 随机生成(格式: /8ugSUeNJ.9OEnTErb.dVZMUAFu)
-  * 自定义输入(格式: /8ugSUeNJ, 加不加 `/` 都可以)
+* UUID default/fill:
+  * Randomly generated
+  * Custom standard UUID input
+  * Non-standard UUID mapping conversion
+* kcp(seed) and trojan(password) default/fill:
+  * Random generation (format: cw-GEMDYgwIV3_g#)
+  * Custom input
+* target default/fill:
+  * Random selection from serverNames.json
+  * TLSv1.3 and H2 validation for custom targets
+  * Automatic serverNames acquisition for custom targets
+* shortId default/fill:
+  * Random generation (default two shortIds e.g.: 01234567, 0123456789abcdef)
+  * Custom shortId input
+  * Numeric input 0-8 generates 0-16 length shortIds
+  * Comma-separated multiple values
+* path default/fill:
+  * Random generation (format: /8ugSUeNJ.9OEnTErb.dVZMUAFu)
+  * Custom input (format: /8ugSUeNJ, with/without `/`)
 
-## 问题
+## Issues
 
-1. 如果安装成功，但无法使用，请检查服务器是否开启对应端口，可通过 `https://tcp.ping.pe/ip:port` 验证服务器端口是否开放。
-2. 使用 SNI 配置前，请确保 VPS 的 HTTP(80) 与 HTTPS(443) 端口开放。
-3. 使用 SNI 配置前，请不要开启 CDN 保护，不然无法正常申请 SSL 证书。
-4. 上下行分离详情请看 [XHTTP: Beyond REALITY][XHTTP] 与 [xhttp 五合一配置][xhttp 五合一配置] 了解。
-5. 使用 SNI 获取证书时遇到 【Could not get nonce, let's try again】 请查看 [ZeroSSL 状态页](https://status.zerossl.com/)，大概率是 ZeroSSL 的【Free ACME Service】处于 【Service disruption】或【Service outage】状态。
+1. If the installation is successful but does not work properly, please check whether the server port is open. You can verify port accessibility through `https://tcp.ping.pe/ip:port`
+2. Before using SNI configuration, ensure VPS HTTP(80) and HTTPS(443) ports are open
+3. Before using SNI configuration, disable CDN protection to avoid SSL certificate issues
+4. For upstream/downstream separation details, see [XHTTP: Beyond REALITY][XHTTP] and [xhttp 五合一配置][xhttp 五合一配置]
+5. When using SNI to obtain a certificate and encountering the error ["Could not get nonce, let's try again"], please check the [ZeroSSL Status Page](https://status.zerossl.com/) . It is highly likely that ZeroSSL's "Free ACME Service" is experiencing "Service disruption" or "Service outage"
 
-## 分享链接
+## Share Links
 
-基于[VMessAEAD / VLESS 分享链接标准提案](https://github.com/XTLS/Xray-core/discussions/716)与[v2rayN](https://github.com/2dust/v2rayN)实现，如果其他客户端无法正常使用，请自行根据分享链接进行修改。
+Based on [VMessAEAD / VLESS 分享链接标准提案](https://github.com/XTLS/Xray-core/discussions/716) and [v2rayN](https://github.com/2dust/v2rayN). Modify links manually if other clients have compatibility issues.
 
-SNI 配置中，CDN 的分享链接 Alpn 默认为 H2，如有 H3 需求，请自行在客户端修改。
+In SNI configurations, CDN share links default Alpn to H2. For H3 requirements, modify client settings manually.
 
-## 如何使用
+## Usage
 
-* 获取
-
+* Download:
   ```sh
   wget --no-check-certificate -O ${HOME}/Xray-script.sh https://raw.githubusercontent.com/ArtemKiyashko/Xray-script/main/install.sh
   ```
-
-* 使用
-  * 启动界面
+  
+* Usage
+  * Launch interface
 
     ```sh
     bash ${HOME}/Xray-script.sh
     ```
 
-  * 快速安装 Vision
+  * Quick install Vision
 
     ```sh
     bash ${HOME}/Xray-script.sh --vision
     ```
 
-  * 快速安装 XHTTP
+  * Quick install XHTTP
 
     ```sh
     bash ${HOME}/Xray-script.sh --xhttp
     ```
 
-  * 快速安装 Fallback
+  * Quick install Fallback
 
     ```sh
     bash ${HOME}/Xray-script.sh --fallback
     ```
 
-* 快速启动(界面)
-
+* Quick start (with interface)
   ```sh
   wget --no-check-certificate -O ${HOME}/Xray-script.sh https://raw.githubusercontent.com/ArtemKiyashko/Xray-script/main/install.sh && bash ${HOME}/Xray-script.sh
   ```
 
-## 脚本界面
+## Client Management
+
+The script includes a built-in client management system for VLESS-Vision-REALITY protocol configurations. This feature allows you to:
+
+### Features
+
+* **List Clients** - View all configured clients with their UUIDs and shortIds
+* **Add Clients** - Create new client configurations with automatic UUID and shortId generation
+* **Delete Clients** - Remove clients while maintaining array synchronization
+* **Generate Share Links** - Create client-specific share links and QR codes
+
+### Key Details
+
+* **ShortId Management**: Each client has a corresponding shortId. When adding a client, a new 8-byte (16 hex characters) shortId is automatically generated and added to the array.
+* **Array Synchronization**: When deleting a client, both the client entry and its corresponding shortId are removed to maintain index alignment between the `clients` and `shortIds` arrays.
+* **Service Restart**: After adding or deleting clients, the script prompts whether to restart the Xray service to apply changes immediately.
+
+### Access Client Management
+
+1. Launch the script main menu
+2. Select option **7. Manage Client Configuration**
+
+### Usage Flow
+
+**Adding a Client:**
+```
+1. Select "Add New Client"
+2. Enter a unique client name (used as email identifier)
+3. UUID and shortId are automatically generated
+4. Optionally restart Xray service when prompted
+```
+
+**Deleting a Client:**
+```
+1. Select "Delete Client"
+2. View the current client list
+3. Enter the client number to delete
+4. Confirm the deletion
+5. Optionally restart Xray service when prompted
+```
+
+**Warning**: The client list shows a synchronization warning if the `clients` and `shortIds` arrays have different lengths, helping identify potential configuration issues.
+
+## Script Interface
 
 ```sh
  __   __  _    _   _______   _______   _____  
@@ -108,32 +149,32 @@ SNI 配置中，CDN 的分享链接 Alpn 默认为 H2，如有 H3 需求，请�
 
 Copyright (C) zxcvos | https://github.com/ArtemKiyashko/Xray-script
 
--------------------------------------------
-Xray       : v25.7.26
-CONFIG     : VLESS-Vision-REALITY
-WARP Proxy : 已启动
--------------------------------------------
+------------------------------------------------------
+Xray       : v25.10.15
+CONFIG     : Vision
+WARP Proxy : Disabled
+------------------------------------------------------
 
---------------- Xray-script ---------------
- Version      : v2025-07-25
- Description  : Xray 管理脚本
------------------ 装载管理 ----------------
-1. 完整安装
-2. 仅安装/更新
-3. 卸载
------------------ 操作管理 ----------------
-4. 启动
-5. 停止
-6. 重启
------------------ 配置管理 ----------------
-7. 分享链接与二维码
-8. 信息统计
-9. 管理配置
--------------------------------------------
-0. 退出
+--------------- Xray-script ------------------
+Version      : v2025.10.21
+Description  : Xray Management Script
+------------------ Installation ------------------
+1. Full Installation
+2. Install/Update Only
+3. Uninstall
+------------------ Operation ------------------
+4. Start
+5. Stop
+6. Restart
+------------------ Configuration ------------------
+7. Manage Client Configuration
+8. Traffic Statistics
+9. Manage Configuration
+------------------------------------------------------
+0. Exit
 ```
 
-## 已测试系统
+## Tested Systems
 
 | Platform | Version    |
 | -------- | ---------- |
@@ -142,107 +183,102 @@ WARP Proxy : 已启动
 | CentOS   | 7, 8, 9    |
 | Rocky    | 8, 9       |
 
-以上发行版均通过 Vultr 测试安装。
+All tested on Vultr instances. Other Debian/Red Hat derivatives might work but are untested.
 
-其他 Debian 基系统与 Red Hat 基系统可能能用，但未测试过，可能存在问题。
+## Installation Time Notes
 
-## 安装时长说明
+SNI configuration is designed for long-term use after initial setup. Reinstalling systems frequently will consume significant time. Use configuration management options for domain/setting changes.
 
-SNI 配置适合安装一次后长期使用，不适合反复重置系统安装，这会消耗您的大量时间。如果需要更换配置和域名等，在管理界面都有相应的选项。
+When switching from SNI configuration, Nginx stops but remains installed. Reactivating SNI won't trigger reinstallation.
 
-更换为非 SNI 配置后，Nginx 将停止服务，但会继续保留在本机，再启用 SNI 配置时不会进行重新安装。
+### Installation Time Reference (1CPU/1GB)
 
-### 安装时长参考
+| Process                 | Duration           |
+| ----------------------- | ------------------ |
+| Update system packages  | 0-10 minutes       |
+| Install dependencies    | 0-5 minutes        |
+| Install Docker          | 1-2 minutes        |
+| Install Cloudreve       | 3-5 minutes        |
+| Install Cloudflare-warp | 3-5 minutes        |
+| Install Xray            | < half a minute    |
+| Install Nginx           | 13-15 minutes      |
+| Issue certificates      | 1-2 minutes        |
+| Configuration files     | < 100 milliseconds |
 
-安装流程：
+### Why does the script installation take so long?
 
-更新系统管理包->安装依赖->[安装Docker]->[安装Cloudreve]->[安装Cloudflare-warp]->安装Xray->安装Nginx->申请证书->配置文件
+Nginx in the script is managed by compiling from source.
 
-**这是一台单核1G的服务器的平均安装时长，仅供参考：**
+The advantages of compiling include:
 
-| 项目                | 时长      |
-| ------------------- | --------- |
-| 更新系统管理包      | 0-10分钟  |
-| 安装依赖            | 0-5分钟   |
-| 安装Docker          | 1-2分钟   |
-| 安装Cloudreve       | 3-5分钟   |
-| 安装Cloudflare-warp | 3-5分钟   |
-| 安装Xray            | <半分钟   |
-| 安装Nginx           | 13-15分钟 |
-| 申请证书            | 1-2分钟   |
-| 配置文件            | <半分钟  |
+1. High runtime efficiency (optimized with -O3 during compilation)
+2. Newer software versions
 
-### 为什么 SNI 配置安装时间那么长？
+The drawback is that compilation takes a long time.
 
-脚本的 Nginx 是采用源码编译的形式进行管理安装。
+## Installation Paths
 
-编译相比直接安装二进制文件的优点有：
 
-1. 运行效率高 (编译时采用了-O3优化)
-2. 软件版本新
-
-缺点就是编译耗时长。
-
-## 安装位置
-
-**Xray-script:** `/usr/local/xray-script`
+**Xray-script:** `/usr/local/etc/xray-script`
 
 **Nginx:** `/usr/local/nginx`
 
-**Cloudreve:** `/usr/local/xray-script/docker/cloudreve`
+**Cloudreve:** `/usr/local/cloudreve`
 
-**Cloudflare-warp:** `/usr/local/xray-script/docker/warp`
+**Cloudflare-warp:** `/usr/local/cloudflare_warp`
 
-**Xray:** 见 **[Xray-install](https://github.com/XTLS/Xray-install)**
+**Xray:** See **[Xray-install](https://github.com/XTLS/Xray-install)**
 
-## 依赖列表
 
-使用 SNI 配置时，脚本可能自动安装以下依赖：
-| 用途                            | Debian基系统                         | Red Hat基系统       |
-| ------------------------------- | ------------------------------------ | ------------------- |
-| yumdb set(标记包手动安装)       |                                      | yum-utils           |
-| dnf config-manager              |                                      | dnf-plugins-core    |
-| IP 获取                         | iproute2                             | iproute             |
-| DNS 解析                        | dnsutils                             | bind-utils          |
-| wget                            | wget                                 | wget                |
-| curl                            | curl                                 | curl                |
-| wget/curl https                 | ca-certificates                      | ca-certificates     |
-| kill/pkill/ps/sysctl/free       | procps                               | procps-ng           |
-| epel源                          |                                      | epel-release        |
-| epel源                          |                                      | epel-next-release   |
-| remi源                          |                                      | remi-release        |
-| 防火墙                          | ufw                                  | firewalld           |
-| **编译基础：**                  |                                      |                     |
-| 下载源码文件                    | wget                                 | wget                |
-| 解压tar源码文件                 | tar                                  | tar                 |
-| 解压tar.gz源码文件              | gzip                                 | gzip                |
-| gcc                             | gcc                                  | gcc                 |
-| g++                             | g++                                  | gcc-c++             |
-| make                            | make                                 | make                |
-| **acme.sh依赖：**               |                                      |                     |
-|                                 | curl                                 | curl                |
-|                                 | openssl                              | openssl             |
-|                                 | cron                                 | crontabs            |
-| **编译openssl：**               |                                      |                     |
-|                                 | perl-base(包含于libperl-dev)         | perl-IPC-Cmd        |
-|                                 | perl-modules-5.32(包含于libperl-dev) | perl-Getopt-Long    |
-|                                 | libperl5.32(包含于libperl-dev)       | perl-Data-Dumper    |
-|                                 |                                      | perl-FindBin        |
-| **编译Brotli：**                |                                      |                     |
-|                                 | git                                  | git                 |
-|                                 | libbrotli-dev                        | brotli-devel        |
-| **编译Nginx：**                 |                                      |                     |
-|                                 | libpcre2-dev                         | pcre2-devel         |
-|                                 | zlib1g-dev                           | zlib-devel          |
-| --with-http_xslt_module         | libxml2-dev                          | libxml2-devel       |
-| --with-http_xslt_module         | libxslt1-dev                         | libxslt-devel       |
-| --with-http_image_filter_module | libgd-dev                            | gd-devel            |
-| --with-google_perftools_module  | libgoogle-perftools-dev              | gperftools-devel    |
-| --with-http_geoip_module        | libgeoip-dev                         | geoip-devel         |
-| --with-http_perl_module         |                                      | perl-ExtUtils-Embed |
-|                                 | libperl-dev                          | perl-devel          |
+## Dependencies
 
-## 致谢
+SNI configuration may install these dependencies:
+
+| Purpose                                           | Debian-based Systems                        | Red Hat-based Systems |
+| ------------------------------------------------- | ------------------------------------------- | --------------------- |
+| yumdb set (mark packages for manual installation) |                                             | yum-utils             |
+| dnf config-manager                                |                                             | dnf-plugins-core      |
+| IP retrieval                                      | iproute2                                    | iproute               |
+| DNS resolution                                    | dnsutils                                    | bind-utils            |
+| wget                                              | wget                                        | wget                  |
+| curl                                              | curl                                        | curl                  |
+| wget/curl https                                   | ca-certificates                             | ca-certificates       |
+| kill/pkill/ps/sysctl/free                         | procps                                      | procps-ng             |
+| epel repository                                   |                                             | epel-release          |
+| epel repository                                   |                                             | epel-next-release     |
+| remi repository                                   |                                             | remi-release          |
+| Firewall                                          | ufw                                         | firewalld             |
+| **Compilation Basics:**                           |                                             |                       |
+| Download source files                             | wget                                        | wget                  |
+| Unzip tar source files                            | tar                                         | tar                   |
+| Unzip tar.gz source files                         | gzip                                        | gzip                  |
+| gcc                                               | gcc                                         | gcc                   |
+| g++                                               | g++                                         | gcc-c++               |
+| make                                              | make                                        | make                  |
+| **acme.sh Dependencies:**                         |                                             |                       |
+|                                                   | curl                                        | curl                  |
+|                                                   | openssl                                     | openssl               |
+|                                                   | cron                                        | crontabs              |
+| **Compile openssl:**                              |                                             |                       |
+|                                                   | perl-base (included in libperl-dev)         | perl-IPC-Cmd          |
+|                                                   | perl-modules-5.32 (included in libperl-dev) | perl-Getopt-Long      |
+|                                                   | libperl5.32 (included in libperl-dev)       | perl-Data-Dumper      |
+|                                                   |                                             | perl-FindBin          |
+| **Compile Brotli:**                               |                                             |                       |
+|                                                   | git                                         | git                   |
+|                                                   | libbrotli-dev                               | brotli-devel          |
+| **Compile Nginx:**                                |                                             |                       |
+|                                                   | libpcre2-dev                                | pcre2-devel           |
+|                                                   | zlib1g-dev                                  | zlib-devel            |
+| --with-http_xslt_module                           | libxml2-dev                                 | libxml2-devel         |
+| --with-http_xslt_module                           | libxslt1-dev                                | libxslt-devel         |
+| --with-http_image_filter_module                   | libgd-dev                                   | gd-devel              |
+| --with-google_perftools_module                    | libgoogle-perftools-dev                     | gperftools-devel      |
+| --with-http_geoip_module                          | libgeoip-dev                                | geoip-devel           |
+| --with-http_perl_module                           |                                             | perl-ExtUtils-Embed   |
+|                                                   | libperl-dev                                 | perl-devel            |
+
+## Credits
 
 [Xray-core][Xray-core]
 
@@ -264,7 +300,7 @@ SNI 配置适合安装一次后长期使用，不适合反复重置系统安装�
 
 [Cloudreve][cloudreve]
 
-**此脚本仅供交流学习使用，请勿使用此脚本行违法之事。网络非法外之地，行非法之事，必将接受法律制裁。**
+**This script is for educational purposes only. Do not use it for illegal activities.**
 
 [Xray-core]: https://github.com/XTLS/Xray-core (THE NEXT FUTURE)
 [REALITY]: https://github.com/XTLS/REALITY (THE NEXT FUTURE)
