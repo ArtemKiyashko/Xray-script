@@ -199,6 +199,10 @@
       "select_client": "Select client number to generate share link",
       "generating": "Generating share link...",
       "not_found": "Client not found"
+    },
+    "restart": {
+      "prompt": "Do you want to restart Xray service to apply changes? [Y/n]",
+      "restarting": "Restarting Xray service..."
     }
   },
   "check": {

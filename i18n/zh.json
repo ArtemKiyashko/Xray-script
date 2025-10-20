@@ -199,6 +199,10 @@
       "select_client": "请选择要生成分享链接的客户端编号",
       "generating": "正在生成分享链接...",
       "not_found": "未找到指定的客户端"
+    },
+    "restart": {
+      "prompt": "是否需要重启 Xray 服务以应用更改？[Y/n]",
+      "restarting": "正在重启 Xray 服务..."
     }
   },
   "check": {

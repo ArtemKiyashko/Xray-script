@@ -943,6 +943,26 @@ function handler_restart() {
 }
 
 # =============================================================================
+# 函数名称: ask_restart_service
+# 功能描述: 询问用户是否需要重启 Xray 服务以应用更改。
+# 参数: 无
+# 返回值: 无 (如果用户确认则调用 handler_restart)
+# =============================================================================
+function ask_restart_service() {
+    echo >&2
+    printf "${YELLOW}[$(echo "$I18N_DATA" | jq -r '.title.tip')] ${NC}$(echo "$I18N_DATA" | jq -r '.client_management.restart.prompt') " >&2
+    read -r restart_choice
+    
+    # 默认为 Y (如果用户直接按 Enter 或输入 Y/y)
+    if [[ -z "$restart_choice" ]] || [[ "$restart_choice" =~ ^[Yy]$ ]]; then
+        echo -e "${GREEN}[$(echo "$I18N_DATA" | jq -r '.title.info')]${NC} $(echo "$I18N_DATA" | jq -r '.client_management.restart.restarting')" >&2
+        handler_restart
+    else
+        echo -e "${YELLOW}[$(echo "$I18N_DATA" | jq -r '.title.info')]${NC} Skipped service restart" >&2
+    fi
+}
+
+# =============================================================================
 # 函数名称: handler_share
 # 功能描述: 调用 share.sh 脚本显示分享链接。
 # 参数: 无
@@ -976,6 +996,10 @@ function handler_client_management() {
         
         if [[ -n "$client_name" ]]; then
             bash "${CLIENT_PATH}" 'add' "$client_name"
+            # 如果添加成功，询问是否重启服务
+            if [[ $? -eq 0 ]]; then
+                ask_restart_service
+            fi
         else
             echo -e "${RED}[$(echo "$I18N_DATA" | jq -r '.title.error')]${NC} Client name cannot be empty" >&2
         fi
@@ -998,6 +1022,10 @@ function handler_client_management() {
                 
                 if [[ "$confirm" =~ ^[Yy]$ ]]; then
                     bash "${CLIENT_PATH}" 'delete' "$client_index"
+                    # 如果删除成功，询问是否重启服务
+                    if [[ $? -eq 0 ]]; then
+                        ask_restart_service
+                    fi
                 else
                     echo -e "${YELLOW}[$(echo "$I18N_DATA" | jq -r '.title.info')]${NC} Operation cancelled" >&2
                 fi
