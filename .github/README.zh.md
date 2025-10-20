@@ -149,7 +149,7 @@ SNI 配置中，CDN 的分享链接 Alpn 默认为 H2，如有 H3 需求，请�
   / . \  | |  | |    | |       | |    | |     
  /_/ \_\ |_|  |_|    |_|       |_|    |_|     
 
-Copyright (C) zxcvos | https://github.com/ArtemKiyashko/Xray-script
+Copyright (C) zxcvos | https://github.com/zxcvos/Xray-script
 
 ------------------------------------------------------
 Xray       : v25.10.15

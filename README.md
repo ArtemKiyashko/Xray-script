@@ -147,7 +147,7 @@ The script includes a built-in client management system for VLESS-Vision-REALITY
   / . \  | |  | |    | |       | |    | |     
  /_/ \_\ |_|  |_|    |_|       |_|    |_|     
 
-Copyright (C) zxcvos | https://github.com/ArtemKiyashko/Xray-script
+Copyright (C) zxcvos | https://github.com/zxcvos/Xray-script
 
 ------------------------------------------------------
 Xray       : v25.10.15
