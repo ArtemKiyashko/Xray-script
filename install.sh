@@ -172,9 +172,8 @@ function parse_args() {
     # 遍历所有命令行参数
     while [[ $# -gt 0 ]]; do
         case "$1" in
-        # 如果参数是语言设置
-        --lang=*)
-            LANG_PARAM="${1}"
+        # 语言参数已移除 - 始终使用英文
+        *)
             ;;
         esac
         shift # 移动到下一个参数
@@ -188,38 +187,23 @@ function parse_args() {
 # 返回值: 无 (直接修改全局变量 I18N_DATA)
 # =============================================================================
 function load_i18n() {
-    local lang="${LANG_PARAM#*=}" # 从 LANG_PARAM 中提取语言代码
-
-    # 如果存在脚本配置文件，则尝试从文件中获取语言代码
-    if [[ -z "${lang}" && -f "${SCRIPT_CONFIG_PATH}" ]]; then
-        # 尝试从脚本配置文件中获取语言代码
-        lang="$(jq -r '.language' "${SCRIPT_CONFIG_PATH}")"
-    fi
-
-    # 如果语言设置为 "auto"，则使用系统环境变量 LANG 的第一部分作为语言代码
-    if [[ "$lang" == "auto" ]]; then
-        lang=$(echo "$LANG" | cut -d'_' -f1)
-    fi
-
-    # 如果语言设置为 "en"，则加载英文提示信息
-    if [[ "$lang" == "en" ]]; then
-        I18N_DATA=(
-            ['error']='Error'
-            ['root']='This script must be run as root'
-            ['supported']='Not supported OS'
-            ['ubuntu']='Not supported OS, please change to Ubuntu 18+ and try again.'
-            ['debian']='Not supported OS, please change to Debian 9+ and try again.'
-            ['centos']='Not supported OS, please change to CentOS 7+ and try again.'
-            ['tip']='Update Notice'
-            ['new']='A new version of the script is available. Do you want to update?'
-            ['now']='Update now? [Y/n]'
-            ['promptly']='Please update the script promptly.'
-            ['completed']='Update completed'
-            ['download']='Downloading'
-            ['failed']='Download failed'
-            ['downloaded']='The file has been downloaded to'
-        )
-    fi
+    # 始终使用英文提示信息
+    I18N_DATA=(
+        ['error']='Error'
+        ['root']='This script must be run as root'
+        ['supported']='Not supported OS'
+        ['ubuntu']='Not supported OS, please change to Ubuntu 18+ and try again.'
+        ['debian']='Not supported OS, please change to Debian 9+ and try again.'
+        ['centos']='Not supported OS, please change to CentOS 7+ and try again.'
+        ['tip']='Update Notice'
+        ['new']='A new version of the script is available. Do you want to update?'
+        ['now']='Update now? [Y/n]'
+        ['promptly']='Please update the script promptly.'
+        ['completed']='Update completed'
+        ['download']='Downloading'
+        ['failed']='Download failed'
+        ['downloaded']='The file has been downloaded to'
+    )
 }
 
 # =============================================================================
@@ -557,23 +541,9 @@ function main() {
         download_xray_script_files "${PROJECT_ROOT}"
     fi
 
-    # 检查配置文件中的语言设置
-    local lang="$(jq -r '.language' "${SCRIPT_CONFIG_PATH}")"
-    if [[ -z "${lang}" && -z "${LANG_PARAM}" ]]; then
-        # 如果语言未设置且未通过命令行指定，则运行菜单脚本选择语言
-        bash "${CORE_DIR}/menu.sh" '--language'
-        case $? in
-        2) LANG_PARAM="en" ;; # 选择英文
-        *) LANG_PARAM="zh" ;; # 默认中文
-        esac
-        # 更新配置文件中的语言设置
-        SCRIPT_CONFIG="$(jq --arg language "${LANG_PARAM}" '.language = $language' "${SCRIPT_CONFIG_PATH}")"
-        echo "${SCRIPT_CONFIG}" >"${SCRIPT_CONFIG_PATH}" && sleep 2
-    elif [[ "${LANG_PARAM}" =~ ^--lang= ]]; then
-        # 如果通过命令行指定了语言，则更新配置文件
-        SCRIPT_CONFIG="$(jq --arg language "${LANG_PARAM#*=}" '.language = $language' "${SCRIPT_CONFIG_PATH}")"
-        echo "${SCRIPT_CONFIG}" >"${SCRIPT_CONFIG_PATH}" && sleep 2
-    fi
+    # 始终使用英文，更新配置文件中的语言设置为 en
+    SCRIPT_CONFIG="$(jq '.language = "en"' "${SCRIPT_CONFIG_PATH}")"
+    echo "${SCRIPT_CONFIG}" >"${SCRIPT_CONFIG_PATH}" && sleep 2
 
     # 启动主脚本，并传递快速安装选项
     bash "${CORE_DIR}/main.sh" "${QUICK_INSTALL}"
