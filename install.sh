@@ -432,8 +432,9 @@ function check_xray_script_version() {
             rm -f "${CUR_DIR}/${CUR_FILE}"
             # 更新当前脚本文件
             cp -f "${PROJECT_ROOT}/install.sh" "${CUR_DIR}/${CUR_FILE}"
-            # 更新版本号
-            sed -i "s|${local_version}|${remote_version}|" "${SCRIPT_CONFIG_PATH}" && sleep 1
+            # 更新版本号并设置语言为英文
+            SCRIPT_CONFIG="$(jq --arg version "${remote_version}" '.version = $version | .language = "en"' "${SCRIPT_CONFIG_PATH}")"
+            echo "${SCRIPT_CONFIG}" >"${SCRIPT_CONFIG_PATH}" && sleep 1
             # 打印更新完成信息
             echo -e "${GREEN}[${I18N_DATA['tip']}]${NC} ${I18N_DATA['completed']}"
             # 重启脚本
@@ -489,6 +490,15 @@ function main() {
     if [[ ! -d "${SCRIPT_CONFIG_DIR}" && ! -f "${SCRIPT_CONFIG_PATH}" ]]; then
         mkdir -p "${SCRIPT_CONFIG_DIR}"
         wget -O "${SCRIPT_CONFIG_PATH}" https://raw.githubusercontent.com/ArtemKiyashko/Xray-script/main/config.json
+        # 立即设置语言为英文
+        SCRIPT_CONFIG="$(jq '.language = "en"' "${SCRIPT_CONFIG_PATH}")"
+        echo "${SCRIPT_CONFIG}" >"${SCRIPT_CONFIG_PATH}"
+    fi
+
+    # 确保配置文件中的语言设置为英文
+    if [[ -f "${SCRIPT_CONFIG_PATH}" ]]; then
+        SCRIPT_CONFIG="$(jq '.language = "en"' "${SCRIPT_CONFIG_PATH}")"
+        echo "${SCRIPT_CONFIG}" >"${SCRIPT_CONFIG_PATH}"
     fi
 
     # 处理命令行参数中的快速安装和自定义目录选项
@@ -540,10 +550,6 @@ function main() {
         # 如果不存在，则下载项目文件
         download_xray_script_files "${PROJECT_ROOT}"
     fi
-
-    # 始终使用英文，更新配置文件中的语言设置为 en
-    SCRIPT_CONFIG="$(jq '.language = "en"' "${SCRIPT_CONFIG_PATH}")"
-    echo "${SCRIPT_CONFIG}" >"${SCRIPT_CONFIG_PATH}" && sleep 2
 
     # 启动主脚本，并传递快速安装选项
     bash "${CORE_DIR}/main.sh" "${QUICK_INSTALL}"
