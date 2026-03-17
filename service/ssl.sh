@@ -71,26 +71,15 @@ declare I18N_DATA=''     # 存储从 i18n JSON 文件中读取的全部数据
 # 退出码: 如果 i18n 文件不存在，则输出错误信息并退出脚本 (exit 1)
 # =============================================================================
 function load_i18n() {
-    # 从配置文件中读取语言设置
-    local lang="$(jq -r '.language' "${SCRIPT_CONFIG_PATH}")"
-
-    # 如果语言设置为 "auto"，则使用系统环境变量 LANG 的第一部分作为语言代码
-    if [[ "$lang" == "auto" ]]; then
-        lang=$(echo "$LANG" | cut -d'_' -f1)
-    fi
+    # Always use English language
+    local lang="en"
 
     # 构造 i18n 文件的完整路径
     local i18n_file="${I18N_DIR}/${lang}.json"
 
     # 检查 i18n 文件是否存在
     if [[ ! -f "${i18n_file}" ]]; then
-        # 文件不存在时，根据语言输出不同的错误信息
-        if [[ "$lang" == "zh" ]]; then
-            echo -e "${RED}[错误]${NC} 文件不存在: ${i18n_file}" >&2
-        else
-            echo -e "${RED}[Error]${NC} File Not Found: ${i18n_file}" >&2
-        fi
-        # 退出脚本，错误码为 1
+        echo -e "${RED}[Error]${NC} File Not Found: ${i18n_file}" >&2
         exit 1
     fi
 
